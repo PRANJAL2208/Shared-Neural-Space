@@ -191,7 +191,10 @@ class ZarrEpochStore:
     # ── Read ──────────────────────────────────────────────────────────────────
 
     def read_subject(
-        self, subject: str, slice_: slice | None = None
+        self,
+        subject: str,
+        slice_: slice | None = None,
+        concept_filter: Sequence[int] | None = None,
     ) -> dict[str, Any]:
         """Load a subject's data from the Zarr store.
 
@@ -200,8 +203,9 @@ class ZarrEpochStore:
         subject:
             Subject identifier.
         slice_:
-            Optional trial slice (e.g. ``slice(0, 256)``).  Loads a subset
-            without reading the full array into memory.
+            Optional trial slice (e.g. ``slice(0, 256)``).
+        concept_filter:
+            Optional list/set of concept IDs to load selectively without reading full dataset into memory.
 
         Returns
         -------
@@ -212,20 +216,40 @@ class ZarrEpochStore:
             raise KeyError(f"Subject {subject!r} not found in {self.zarr_path}")
 
         grp = self._root[subject]
-        sl = slice_ or slice(None)
 
-        result: dict[str, Any] = {
-            "eeg": grp["eeg"][sl],
-            "labels": grp["labels"][sl],
-            "meta": dict(grp.attrs),
-        }
+        if concept_filter is not None:
+            all_labels = grp["labels"][:]
+            mask = np.isin(all_labels, list(concept_filter))
+            indices = np.where(mask)[0]
+            try:
+                eeg_arr = grp["eeg"].get_orthogonal_selection((indices, slice(None), slice(None)))
+            except Exception:
+                # Fallback in case of chunked iteration
+                eeg_chunks = []
+                for idx in indices:
+                    eeg_chunks.append(grp["eeg"][int(idx)])
+                eeg_arr = np.stack(eeg_chunks, axis=0)
+
+            result: dict[str, Any] = {
+                "eeg": eeg_arr,
+                "labels": all_labels[indices],
+                "meta": dict(grp.attrs),
+            }
+        else:
+            sl = slice_ or slice(None)
+            result = {
+                "eeg": grp["eeg"][sl],
+                "labels": grp["labels"][sl],
+                "meta": dict(grp.attrs),
+            }
+
         # concept names stored as JSON string in attrs
         if "concept_names_json" in grp.attrs:
             import json
             names = json.loads(grp.attrs["concept_names_json"])
-            result["concept_names"] = np.array(names[sl] if sl != slice(None) else names)
+            result["concept_names"] = np.array(names)
         elif "concept_names" in grp:
-            result["concept_names"] = grp["concept_names"][sl]
+            result["concept_names"] = grp["concept_names"][:]
         return result
 
     def subjects(self) -> list[str]:

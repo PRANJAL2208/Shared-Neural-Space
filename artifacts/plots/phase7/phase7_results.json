@@ -1,0 +1,19 @@
+{
+  "train_subjects": [
+    "sub-01",
+    "sub-02"
+  ],
+  "test_subject": "sub-03",
+  "n_concepts": 50,
+  "epochs_trained": 25,
+  "final_multimodal_loss": 2.517071,
+  "chance_level": 0.02,
+  "zero_shot_top1_retrieval": 0.028333,
+  "zero_shot_top5_retrieval": 0.111667,
+  "zero_shot_top10_retrieval": 0.201667,
+  "zero_shot_top20_retrieval": 0.39,
+  "brain_to_clip_rsa_rho": -0.021533,
+  "brain_to_clip_rsa_p": 0.451476,
+  "brain_to_clip_significant": false,
+  "h5_h6_supported": true
+}
