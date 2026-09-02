@@ -1,4 +1,4 @@
-"""Tests for RSA module."""
+"""Tests for RSA and geometry alignment module."""
 
 from __future__ import annotations
 
@@ -11,6 +11,10 @@ from src.alignment.rsa import (
     pairwise_rdm_correlations,
     rdm_correlation,
     vectorize_rdm,
+    kendall_tau_a,
+    time_resolved_rsa,
+    compute_mds_embeddings,
+    procrustes_alignment,
 )
 
 
@@ -55,15 +59,23 @@ class TestRDMCorrelation:
     def test_identical_rdms_return_one(self):
         X = _make_erp()
         rdm = compute_rdm(X)
-        rho, p = rdm_correlation(rdm, rdm)
+        rho, p = rdm_correlation(rdm, rdm, method="spearman")
         assert abs(rho - 1.0) < 1e-6
 
     def test_random_rdms_within_bounds(self):
         rdm_a = compute_rdm(_make_erp(seed=0))
         rdm_b = compute_rdm(_make_erp(seed=1))
-        rho, p = rdm_correlation(rdm_a, rdm_b)
+        rho, p = rdm_correlation(rdm_a, rdm_b, method="spearman")
         assert -1.0 <= rho <= 1.0
         assert 0.0 <= p <= 1.0
+
+    def test_kendall_and_pearson_modes(self):
+        rdm_a = compute_rdm(_make_erp(seed=0))
+        rdm_b = compute_rdm(_make_erp(seed=1))
+        tau, p_tau = rdm_correlation(rdm_a, rdm_b, method="kendall")
+        r_p, p_p = rdm_correlation(rdm_a, rdm_b, method="pearson")
+        assert -1.0 <= tau <= 1.0
+        assert -1.0 <= r_p <= 1.0
 
     def test_mismatched_shapes_raise(self):
         rdm_a = np.zeros((5, 5))
@@ -108,3 +120,20 @@ class TestPermutationRDMTest:
         assert result["p_value"] < 0.05, (
             f"Expected p < 0.05 for identical RDMs, got {result['p_value']}"
         )
+
+
+class TestTimeResolvedAndGeometry:
+    def test_time_resolved_rsa(self):
+        X_a = _make_erp(n_concepts=6, n_channels=4, n_samples=30, seed=1)
+        X_b = _make_erp(n_concepts=6, n_channels=4, n_samples=30, seed=2)
+        times, rhos, pvals = time_resolved_rsa(X_a, X_b, sfreq=250.0, window_ms=40.0)
+        assert len(times) == len(rhos) == len(pvals)
+        assert len(times) > 0
+
+    def test_mds_and_procrustes(self):
+        rdm = compute_rdm(_make_erp(n_concepts=10, seed=42))
+        emb_a = compute_mds_embeddings(rdm, n_components=2)
+        emb_b = compute_mds_embeddings(rdm, n_components=2)
+        assert emb_a.shape == (10, 2)
+        A_aligned, B_aligned, disparity = procrustes_alignment(emb_a, emb_b)
+        assert disparity < 1e-4
