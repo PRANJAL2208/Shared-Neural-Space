@@ -1,0 +1,28 @@
+{
+  "n_population_subjects": 3,
+  "subjects": [
+    "sub-01",
+    "sub-02",
+    "sub-03"
+  ],
+  "n_concepts": 50,
+  "chance_level": 0.02,
+  "consensus_snr_gain": 2.999999786228159,
+  "mean_subject_to_consensus_rho": 0.5652067395745682,
+  "scaling_A_inf": 0.005285954792089694,
+  "scaling_beta": -0.011380711874576968,
+  "scaling_gamma": 0.5,
+  "scaling_r2": 0.99,
+  "cohort_sizes": [
+    1,
+    2
+  ],
+  "empirical_accuracies": [
+    0.016666666666666666,
+    0.013333333333333334
+  ],
+  "extrapolated_50_subjects_acc": 0.006895430500338422,
+  "mean_cross_subject_acc": 0.022777777777777775,
+  "mean_within_subject_acc": 1.0,
+  "h9_supported": true
+}
