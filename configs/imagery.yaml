@@ -1,0 +1,56 @@
+# Imagery dataset — OpenNeuro ds005815
+# 20 subjects, 31 EEG channels, 2 sessions, 103 recordings, ~9.9 GB
+# Multisensory perception + mental imagery with vividness ratings
+# Conditions: visual, auditory, multimodal (perception AND imagery)
+
+dataset:
+  id: ds005815
+  name: "Imagery"
+  source: openneuro
+  eegdash_id: "ds005815"
+  total_subjects: 20
+  total_recordings: 103
+  sessions_per_subject: 2
+  acquisition_hz: null        # inspect from dataset; do not assume
+  nominal_channels: 31        # 31 EEG channels per EEGDash report
+
+data_access:
+  cache_dir: "./cache/raw"
+  level: recording
+  download_timeout_s: 600
+
+preprocessing:
+  is_preprocessed_derivative: true   # derivatives available; inspect before re-filtering
+  bandpass_hz: [0.5, 45.0]
+  notch_hz: null
+  resample_hz: 250
+  reference: "average"
+  epoch:
+    tmin: -0.2
+    tmax:  0.8
+    baseline: [-0.2, 0.0]
+    reject_peak_to_peak_uv: 150.0   # slightly looser; 31 channels, multisensory
+
+montage:
+  strategy: "none"
+
+storage:
+  epochs_zarr: "./artifacts/features/ds005815_epochs.zarr"
+  embeddings_zarr: "./artifacts/embeddings/ds005815_embeddings.zarr"
+  manifest_parquet: "./artifacts/manifests/ds005815_manifest.parquet"
+  keep_epochs: true
+
+experiment:
+  # IMPORTANT: Phase 11 analyses ds005815 internally FIRST.
+  # Cross-dataset alignment (THINGS → imagery) is exploratory only.
+  primary_analysis: "within_dataset_reinstatement"
+  conditions:
+    - visual_perception
+    - auditory_perception
+    - multimodal_perception
+    - visual_imagery
+    - auditory_imagery
+    - multimodal_imagery
+  # H7: sim(Z_perception_c, Z_imagery_c) > sim(Z_perception_c, Z_imagery_d)
+  reinstatement_hypothesis: "same_condition_similarity_exceeds_different"
+  vividness_covariate: true   # use vividness ratings as a continuous covariate

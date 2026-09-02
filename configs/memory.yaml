@@ -1,0 +1,70 @@
+# Essex EEG Movie Memory dataset — OpenNeuro ds006142
+# 27 subjects, 64 EEG channels @ 2048 Hz, ~24.3 GB, ~27.6 hours
+# Participants watched 10-second clips and reported recognition & remembering.
+# Clips triggering recognition were repeated and subjects indicated the trigger moment.
+
+dataset:
+  id: ds006142
+  name: "EssexMovieMemory"
+  source: openneuro
+  eegdash_id: "ds006142"
+  total_subjects: 27
+  acquisition_hz: 2048        # high-rate; resample to 250 Hz after epoching
+  nominal_channels: 64
+
+data_access:
+  cache_dir: "./cache/raw"
+  level: recording
+  download_timeout_s: 900
+
+preprocessing:
+  is_preprocessed_derivative: false
+  bandpass_hz: [0.5, 45.0]
+  notch_hz: 50                # UK mains; likely present
+  resample_hz: 250
+  reference: "average"
+  epoch:
+    # Two epoch types — controlled in experiment config below
+    stimulus_locked:
+      tmin: -0.5
+      tmax: 10.5              # full clip + buffer
+      baseline: [-0.5, 0.0]
+    recognition_locked:
+      tmin: -2.0
+      tmax:  2.0              # around trigger moment (H8)
+      baseline: [-2.0, -1.5]
+    reject_peak_to_peak_uv: 150.0
+
+montage:
+  strategy: "none"
+
+storage:
+  epochs_zarr: "./artifacts/features/ds006142_epochs.zarr"
+  embeddings_zarr: "./artifacts/embeddings/ds006142_embeddings.zarr"
+  manifest_parquet: "./artifacts/manifests/ds006142_manifest.parquet"
+  keep_epochs: false          # recognition embeddings only; raw epochs too large
+
+experiment:
+  # H8: recognition/memory classifier generalises across subjects
+  # CRITICAL: separate recognition from remembering
+  behavioral_labels:
+    - NOT_RECOGNIZED
+    - RECOGNIZED_NOT_REMEMBERED
+    - RECOGNIZED_AND_REMEMBERED
+  # Derive from BIDS events.tsv; do not assume column names — inspect at load time.
+  label_derivation: "inspect_events_tsv"
+
+  recognition_trigger:
+    use: true                 # epoch around recognition_trigger_time for H8
+    window_s: [-2.0, 2.0]
+
+  loso:
+    n_outer_folds: 27
+    n_inner_folds: 26
+
+  controls:
+    # Guard against these confounds before claiming recognition generalises
+    - trial_order
+    - clip_content_features   # encode clip-level visual features as covariate
+    - motor_response_timing
+    - recording_session

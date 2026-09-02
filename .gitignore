@@ -1,0 +1,34 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Caches and data
+cache/
+*.zarr/
+*.parquet
+*.eeg
+*.vhdr
+*.vmrk
+*.edf
+*.bdf
+*.fif
+
+# Artifact data stores (keep plots/docs, ignore large data dumps)
+artifacts/features/
+artifacts/embeddings/
+artifacts/manifests/
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log

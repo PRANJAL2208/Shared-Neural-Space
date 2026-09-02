@@ -1,0 +1,73 @@
+# THINGS-EEG2 — NEMAR nm000232
+# 10 subjects, 4 sessions each, 638 recordings, 63 channels @ 1000 Hz
+# ~241.5 GB total — NEVER download in full.
+# Use recording-level ephemeral caching throughout.
+
+dataset:
+  id: nm000232
+  name: "THINGS-EEG2"
+  source: nemar
+  eegdash_id: "nm000232"
+  total_subjects: 10
+  total_recordings: 638
+  sessions_per_subject: 4
+  n_train_images: 16540
+  n_test_images: 200          # repeated test set, key for retrieval evaluation
+  acquisition_hz: 1000
+  nominal_channels: 63
+
+data_access:
+  cache_dir: "./cache/raw"
+  level: recording             # MANDATORY: recording level, not subject
+  download_timeout_s: 900
+
+preprocessing:
+  is_preprocessed_derivative: false
+  bandpass_hz: [0.5, 45.0]
+  notch_hz: null
+  resample_hz: 250
+  reference: "average"
+  epoch:
+    tmin: -0.2
+    tmax:  0.8
+    baseline: [-0.2, 0.0]
+    reject_peak_to_peak_uv: 100.0
+
+montage:
+  strategy: "none"             # all 10 subjects share 63-ch montage
+
+storage:
+  epochs_zarr: "./artifacts/features/nm000232_epochs.zarr"
+  embeddings_zarr: "./artifacts/embeddings/nm000232_embeddings.zarr"
+  manifest_parquet: "./artifacts/manifests/nm000232_manifest.parquet"
+  # For large-scale model runs, set keep_epochs: false to only retain embeddings
+  keep_epochs: false           # 641 recordings × 63 ch × 250 samples = large
+
+experiment:
+  contrastive:
+    positive_levels:
+      - same_image            # Level 1 (hardest positive for model)
+      - same_concept          # Level 2
+      - related_concept       # Level 3 (via THINGS concept hierarchy)
+    temperature: 0.07         # InfoNCE temperature τ
+    embedding_dim: 256
+
+  zero_shot:
+    holdout_tiers:
+      - trial                 # easiest: hold out individual trials
+      - image                 # hold out specific images
+      - concept               # ALL trials for concept removed from train
+      - subject               # hold out entire subject
+      - subject_and_concept   # hardest: unseen concept from unseen subject
+
+  loso:
+    n_outer_folds: 10         # one per subject
+    n_inner_folds: 9          # tuning on remaining subjects in outer fold
+
+  retrieval_metrics:
+    - top_1
+    - top_5
+    - mrr
+    - recall_at_1
+    - recall_at_5
+    - recall_at_10

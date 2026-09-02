@@ -1,0 +1,57 @@
+# THINGS-EEG Population dataset — OpenNeuro ds003825
+# 50 subjects (48 × 63-ch, 2 × 128-ch), 1000 Hz acquisition, CC0
+# Use only the 48 homogeneous 63-channel subjects for MVP
+
+dataset:
+  id: ds003825
+  name: "THINGS-EEG"
+  source: openneuro          # openneuro | nemar
+  eegdash_id: "ds003825"
+  total_subjects: 50
+  selected_subjects:         # 48 subjects with 63-channel montage; skip sub-XX see manifest
+    strategy: "channel_count_63"
+  n_concepts: 1854
+  n_images: 22248
+  acquisition_hz: 1000
+  nominal_channels: 63       # expected channel count for selected subjects
+
+data_access:
+  cache_dir: "E:/pranjal_evobrain/cache/raw"
+  level: recording           # recording | subject — always recording for this project
+  download_timeout_s: 600
+
+preprocessing:
+  is_preprocessed_derivative: false
+  bandpass_hz: [0.5, 45.0]
+  notch_hz: null             # set to 50 or 60 if line noise is detected
+  resample_hz: 250
+  reference: "average"       # average | linked-mastoids | none
+  epoch:
+    tmin: -0.2
+    tmax:  0.8
+    baseline: [-0.2, 0.0]
+    reject_peak_to_peak_uv: 100.0   # null to disable threshold rejection
+
+montage:
+  strategy: "select_common"  # select_common | interpolate | none
+  # select_common: restrict to channels present in all selected subjects
+  # interpolate: project 128-ch subjects to 63-ch space (exploratory only)
+
+storage:
+  epochs_zarr: "E:/pranjal_evobrain/features/ds003825_epochs.zarr"
+  embeddings_zarr: "E:/pranjal_evobrain/embeddings/ds003825_embeddings.zarr"
+  manifest_parquet: "E:/pranjal_evobrain/manifests/ds003825_manifest.parquet"
+  keep_epochs: true          # set false to only persist embeddings (save space)
+
+experiment:
+  # MVP-A: broad category split (animal / vehicle / furniture / food / building)
+  # MVP-B: individual concept decoding
+  # MVP-C: semantic similarity / RSA
+  mvp_broad_categories:
+    - animal
+    - vehicle
+    - furniture
+    - food
+    - building
+  mvp_n_concepts: 50         # start small; scale up
+  mvp_n_subjects: 10         # start with 10; scale to 48
