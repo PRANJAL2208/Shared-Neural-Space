@@ -1,0 +1,22 @@
+{
+  "n_subjects": 3,
+  "subjects": [
+    "sub-01",
+    "sub-03",
+    "sub-02"
+  ],
+  "n_concepts": 50,
+  "chance_level": 0.02,
+  "mean_within_subject_acc": 0.022778,
+  "mean_cross_subject_acc": 0.018889,
+  "zero_shot_pair_acc": 0.018333,
+  "permutation_p_value": 0.67033,
+  "significant_p05": false,
+  "peak_decoding_latency_ms": -16.0,
+  "peak_decoding_acc": 0.038333,
+  "top_1_retrieval_acc": 0.018333,
+  "top_5_retrieval_acc": 0.098333,
+  "top_10_retrieval_acc": 0.216667,
+  "top_20_retrieval_acc": 0.405,
+  "h3_supported": false
+}

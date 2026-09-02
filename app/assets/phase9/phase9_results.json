@@ -1,0 +1,15 @@
+{
+  "n_concepts": 50,
+  "source_subject": "sub-01",
+  "target_subject": "sub-03",
+  "n_interpolation_steps": 21,
+  "mean_monotonicity_score": 0.5083333333333333,
+  "pca_variance_explained": [
+    0.17309734225273132,
+    0.12057635933160782
+  ],
+  "vector_arithmetic_top1_acc": 0.0,
+  "vector_arithmetic_top5_acc": 0.3333333333333333,
+  "chance_level": 0.02,
+  "h8_supported": false
+}

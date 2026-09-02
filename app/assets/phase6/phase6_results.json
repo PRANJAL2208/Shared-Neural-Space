@@ -1,0 +1,22 @@
+{
+  "train_subjects": [
+    "sub-01",
+    "sub-02"
+  ],
+  "test_subject": "sub-03",
+  "n_concepts": 50,
+  "epochs_trained": 20,
+  "final_contrastive_loss": 4.068662,
+  "chance_level": 0.02,
+  "raw_sensor_baseline_acc": 0.0183,
+  "latent_zero_shot_acc": 0.023333,
+  "concept_probe_acc": 0.819167,
+  "subject_probe_acc": 0.924167,
+  "subject_chance": 0.5,
+  "subject_invariance_achieved": false,
+  "top_1_latent_retrieval": 0.031667,
+  "top_5_latent_retrieval": 0.101667,
+  "top_10_latent_retrieval": 0.226667,
+  "top_20_latent_retrieval": 0.395,
+  "h4_h5_supported": true
+}
